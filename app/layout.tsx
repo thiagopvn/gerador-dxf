@@ -1,21 +1,24 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "Remarcação de Chassi - DXF Generator",
-  description: "Plataforma de geração de arquivos DXF para remarcação de chassi",
-};
+  title: 'Remarcação de Chassi - DXF Generator',
+  description: 'Plataforma de geração de arquivos DXF',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="pt-BR">
-      <body className="antialiased">
+      <body className={inter.className}>
         {children}
       </body>
     </html>
-  );
+  )
 }

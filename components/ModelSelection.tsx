@@ -15,66 +15,152 @@ export default function ModelSelection({ models, selectedBrand, onSelect, onBack
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div style={{
+      width: '100%',
+      padding: '2rem 1rem'
+    }}>
+      {/* Back Button */}
+      <div style={{
+        marginBottom: '2rem'
+      }}>
         <button
           onClick={onBack}
-          className="flex items-center text-[#a0a0a0] hover:text-white transition-colors"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            color: '#a0a0a0',
+            backgroundColor: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '1rem'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = '#ffffff';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = '#a0a0a0';
+          }}
         >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Voltar
+          <span style={{ marginRight: '0.5rem' }}>←</span>
+          Voltar às Marcas
         </button>
       </div>
 
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Selecione o Modelo
+      {/* Title */}
+      <div style={{
+        textAlign: 'center',
+        marginBottom: '3rem'
+      }}>
+        <h2 style={{
+          fontSize: '2.5rem',
+          fontWeight: 'bold',
+          color: '#ffffff',
+          marginBottom: '0.5rem'
+        }}>
+          2. Selecione o Modelo
         </h2>
-        <p className="text-[#a0a0a0]">
-          Escolha o modelo do <span className="text-[#E50914] font-medium">{selectedBrand.name}</span>
+        <p style={{
+          fontSize: '1.125rem',
+          color: '#a0a0a0'
+        }}>
+          Escolha o modelo do <span style={{ color: '#E50914', fontWeight: '600' }}>{selectedBrand.name}</span>
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Models Grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '1.5rem',
+        maxWidth: '1000px',
+        margin: '0 auto'
+      }}>
         {filteredModels.map((model) => (
           <button
             key={model.id}
             onClick={() => onSelect(model)}
-            className="card hover:bg-[#2a2a2a] hover:border-accent-red hover:scale-105 transform transition-all duration-200 text-left group"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.5rem',
+              backgroundColor: '#1a1a1a',
+              border: '1px solid #2a2a2a',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              textAlign: 'left'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.borderColor = '#E50914';
+              e.currentTarget.style.backgroundColor = '#242424';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.borderColor = '#2a2a2a';
+              e.currentTarget.style.backgroundColor = '#1a1a1a';
+            }}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-medium group-hover:text-[#E50914] transition-colors">
-                  {model.name}
-                </h3>
-                <p className="text-[#a0a0a0] text-sm mt-1">
-                  {model.brandName}
-                </p>
-              </div>
-              <svg 
-                className="w-5 h-5 text-[#a0a0a0] group-hover:text-[#E50914] transition-colors" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M9 5l7 7-7 7" 
-                />
-              </svg>
+            <div style={{ flex: '1' }}>
+              <h3 style={{
+                fontSize: '1.25rem',
+                fontWeight: '600',
+                color: '#ffffff',
+                marginBottom: '0.25rem'
+              }}>
+                {model.name}
+              </h3>
+              <p style={{
+                color: '#a0a0a0',
+                fontSize: '0.875rem'
+              }}>
+                {model.brandName}
+              </p>
+            </div>
+            
+            {/* Arrow Icon */}
+            <div style={{
+              marginLeft: '1rem',
+              color: '#a0a0a0',
+              fontSize: '1.5rem'
+            }}>
+              →
             </div>
           </button>
         ))}
       </div>
 
+      {/* Empty State */}
       {filteredModels.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-[#a0a0a0]">
-            Nenhum modelo encontrado para {selectedBrand.name}
+        <div style={{
+          textAlign: 'center',
+          padding: '4rem 0'
+        }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            backgroundColor: '#1a1a1a',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1.5rem auto'
+          }}>
+            <span style={{ fontSize: '1.5rem' }}>📋</span>
+          </div>
+          <h3 style={{
+            fontSize: '1.25rem',
+            fontWeight: '600',
+            color: '#ffffff',
+            marginBottom: '0.5rem'
+          }}>
+            Nenhum modelo encontrado
+          </h3>
+          <p style={{
+            color: '#a0a0a0'
+          }}>
+            Não há modelos disponíveis para {selectedBrand.name}
           </p>
         </div>
       )}

@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Remarcação de Chassi - DXF Generator
 
 Plataforma de geração de arquivos DXF para remarcação de chassi desenvolvida com Next.js, Firebase e TypeScript.
@@ -27,8 +31,8 @@ npm run db:admin     # Cria usuário administrador
    ```
 
 2. **Configurar variáveis de ambiente:**
-   - Copie o arquivo `.env.local` (já configurado)
-   - As credenciais do Firebase já estão configuradas
+   - O arquivo `.env.local` já está configurado com credenciais do Firebase
+   - As credenciais são funcionais para desenvolvimento e produção
 
 3. **Popular o banco de dados:**
    ```bash
@@ -44,7 +48,7 @@ npm run db:admin     # Cria usuário administrador
    - Coloque os logos das marcas na pasta `public/logos/`
    - Formato: ford.png, chevrolet.png, volkswagen.png, etc.
 
-## 🏗️ Arquitetura
+## 🏗️ Arquitetura e Fluxo de Dados
 
 ### Stack Tecnológica
 - **Framework:** Next.js 14 com App Router
@@ -55,37 +59,27 @@ npm run db:admin     # Cria usuário administrador
 - **Autenticação:** Firebase Authentication
 - **Geração DXF:** dxf-writer + opentype.js
 
-### Estrutura de Pastas
-```
-app/
-├── api/              # API Routes
-├── admin/            # Painel administrativo
-├── dashboard/        # Dashboard do usuário
-├── login/            # Tela de login
-├── layout.tsx        # Layout global
-└── page.tsx          # Página inicial
+### Fluxo de Autenticação
+1. **Login:** Firebase Auth com verificação de roles via custom claims
+2. **Redirecionamento:** Admin users → `/admin`, Regular users → `/dashboard`  
+3. **Proteção:** Todas as rotas protegidas verificam auth state
+4. **API Security:** JWT tokens validados em todas as API routes
 
-components/           # Componentes React
-├── AdminPanel.tsx
-├── BrandSelection.tsx
-├── ModelSelection.tsx
-├── DXFGeneration.tsx
-└── Header.tsx
+### Sistema de Dados
+- **Brands** (`data/brands.ts`): Definição estática das marcas com logos
+- **Models** (`data/models.ts`): Modelos vinculados às marcas
+- **FontMappings** (`data/fontMappings.ts`): Mapeamentos de fonte por modelo/ano
+- **Firebase Sync**: Scripts populam Firestore com dados estáticos
 
-lib/                 # Utilitários
-├── firebase.ts      # Config Firebase client
-├── firebase-admin.ts # Config Firebase admin
-└── types.ts         # Tipos TypeScript
-
-data/                # Dados estáticos
-├── brands.ts
-├── models.ts
-└── fontMappings.ts
-
-scripts/             # Scripts utilitários
-├── create-admin.js
-└── seed-database.js
-```
+### Geração DXF
+- **Endpoint:** `/api/generate-dxf` (POST)
+- **Input:** `{ modelId, year, chassisNumber, engineNumber }`
+- **Processo:** 
+  1. Valida JWT token
+  2. Busca mapeamento de fonte por modelo/ano
+  3. Gera DXF com texto vetorizado
+  4. Retorna arquivo para download
+- **Fallback:** DXF simples sem vetorização (para build/deploy)
 
 ## 👤 Usuários Padrão
 
@@ -97,58 +91,26 @@ scripts/             # Scripts utilitários
 ### Usuário Teste
 Crie usuários através do painel administrativo ou Firebase Console.
 
-## 🔧 Funcionalidades
-
-### Dashboard do Usuário
-1. **Seleção de Marca:** Grid com logos das marcas
-2. **Seleção de Modelo:** Lista dos modelos disponíveis  
-3. **Geração DXF:** Formulário com ano, chassi e motor
-
-### Painel Administrativo
-- Visualização de usuários
-- Gerenciamento de marcas e modelos
-- Configuração de mapeamentos de fonte
-- Dados somente leitura
-
-### API de Geração DXF
-- Endpoint: `/api/generate-dxf`
-- Autenticação via JWT token
-- Vetorização de texto usando OpenType.js
-- Conversão de curvas Bézier para polylines
-- Download automático do arquivo DXF
-
-## 🌐 Deploy na Vercel
-
-1. **Conectar repositório Git:**
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git remote add origin [seu-repositorio]
-   git push -u origin main
-   ```
-
-2. **Configurar na Vercel:**
-   - Importe o projeto do GitHub
-   - Configure as variáveis de ambiente
-   - Deploy automático
-
 ## 🎨 Design System
 
 ### Cores (Tailwind)
-- **Background Primary:** `#111111`
-- **Background Secondary:** `#1a1a1a`
-- **Border:** `#2a2a2a`
-- **Text Primary:** `#ffffff`
-- **Text Secondary:** `#a0a0a0`
-- **Accent Red:** `#E50914`
-- **Success:** `#10b981`
-- **Error:** `#ef4444`
+- **Background Primary:** `#111111` (bg-bg-primary)
+- **Background Secondary:** `#1a1a1a` (bg-bg-secondary)
+- **Border:** `#2a2a2a` (border-border-secondary)
+- **Text Primary:** `#ffffff` (text-text-primary)
+- **Text Secondary:** `#a0a0a0` (text-text-secondary)
+- **Accent Red:** `#E50914` (accent-red)
+- **Accent Hover:** `#f40612` (accent-hover)
 
-### Componentes CSS
+### Componentes CSS (globals.css)
 - `.btn-primary`: Botão principal vermelho
 - `.input-field`: Campo de entrada estilizado
 - `.card`: Card com background escuro
+
+### Padrões de Interação
+- **Hover Effects:** `hover:scale-105 transform transition-all duration-200`
+- **Border Highlights:** `hover:border-accent-red`
+- **Loading States:** `disabled:opacity-50 disabled:cursor-not-allowed`
 
 ## 📝 Desenvolvimento
 
@@ -166,16 +128,53 @@ Crie usuários através do painel administrativo ou Firebase Console.
 2. Configure em `data/fontMappings.ts`
 3. Execute `npm run db:seed`
 
+### Estrutura de Componentes
+```
+components/
+├── Header.tsx           # Header com auth e navegação
+├── BrandSelection.tsx   # Grid de seleção de marcas
+├── ModelSelection.tsx   # Lista de modelos filtrada
+├── DXFGeneration.tsx    # Formulário final de geração
+└── AdminPanel.tsx       # Painel administrativo
+```
+
+### Tipos TypeScript (lib/types.ts)
+- **User**: Interface de usuário com roles
+- **Brand**: Marca com logo e ordenação
+- **Model**: Modelo vinculado à marca
+- **FontMapping**: Mapeamento de fonte por modelo/ano/configurações
+- **DXFGenerationRequest**: Payload para geração DXF
+
+## 🌐 Deploy na Vercel
+
+A aplicação está otimizada para deploy na Vercel:
+
+1. **Build Optimization**: 
+   - `export const dynamic = 'force-dynamic'` em páginas que usam auth
+   - Fallback para DXF simples durante build
+   - Componentes client-side marcados com `'use client'`
+
+2. **Environment Variables na Vercel:**
+   - Configure todas as variáveis do `.env.local`
+   - Firebase funciona tanto em dev quanto em produção
+
 ## 🚨 Troubleshooting
 
-### Erro de autenticação
-- Verifique as credenciais no `.env.local`
-- Certifique-se de que o usuário admin foi criado
+### Erro de build na Vercel
+- Verifique se todos os componentes client estão marcados com `'use client'`
+- Confirme que páginas com auth têm `export const dynamic = 'force-dynamic'`
 
 ### Erro na geração DXF
 - Verifique se as fontes estão em `public/fonts/`
 - Confirme se existe mapeamento para o modelo/ano
+- API retorna DXF simples como fallback
 
-### Problemas de build
-- Execute `npm run type-check` para verificar tipos
-- Verifique se todas as dependências estão instaladas
+### Problemas de autenticação
+- Verifique as credenciais no `.env.local`
+- Certifique-se de que o usuário admin foi criado com `npm run db:admin`
+- Firebase rules permitem leitura/escrita para usuários autenticados
+
+### Problemas de estilo
+- Tailwind está configurado para usar tema customizado
+- Classes customizadas definidas em `globals.css`
+- Use `bg-bg-primary`, `text-text-primary`, `accent-red`, etc.

@@ -3,12 +3,10 @@
 export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function Login() {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,111 +18,226 @@ export default function Login() {
     setLoading(true);
     setError('');
 
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      
-      const idTokenResult = await user.getIdTokenResult();
-      const role = idTokenResult.claims.role;
-
-      if (role === 'admin') {
-        router.push('/admin');
-      } else {
+    // Simulação de login para demonstração
+    setTimeout(() => {
+      if (email === 'admin@remarcacao.com' && password === 'Admin@2024!') {
+        // Login de admin bem-sucedido
+        router.push('/dashboard'); // Redireciona para dashboard como demo
+      } else if (email === 'user@teste.com' && password === '123456') {
+        // Login de usuário comum
         router.push('/dashboard');
+      } else {
+        // Credenciais inválidas
+        setError('Email ou senha inválidos. Tente: admin@remarcacao.com / Admin@2024!');
       }
-    } catch (error: any) {
-      setError('Email ou senha inválidos');
-      console.error('Error signing in:', error);
-    } finally {
       setLoading(false);
-    }
+    }, 1500);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/">
-            <div className="w-16 h-16 bg-[#E50914] rounded-full mx-auto flex items-center justify-center mb-4 cursor-pointer">
-              <svg 
-                className="w-8 h-8 text-white" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
-                />
-              </svg>
-            </div>
-          </Link>
-          <h1 className="text-2xl font-bold text-white mb-2">
-            Fazer Login
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#111111',
+      color: 'white',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem'
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '400px'
+      }}>
+        
+        {/* Logo */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '2rem'
+        }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            backgroundColor: '#E50914',
+            borderRadius: '50%',
+            margin: '0 auto 1rem auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <span style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>DXF</span>
+          </div>
+          <h1 style={{
+            fontSize: '2rem',
+            fontWeight: 'bold',
+            marginBottom: '0.5rem'
+          }}>
+            Acesse sua Conta
           </h1>
-          <p className="text-[#a0a0a0]">
-            Entre com suas credenciais
+          <p style={{
+            color: '#a0a0a0',
+            fontSize: '1rem'
+          }}>
+            Use suas credenciais para acessar o painel
           </p>
         </div>
 
-        <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Form Card */}
+        <div style={{
+          backgroundColor: '#1a1a1a',
+          border: '1px solid #2a2a2a',
+          borderRadius: '12px',
+          padding: '2rem'
+        }}>
+          
+          {/* Demo Info */}
+          <div style={{
+            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+            border: '1px solid #0ea5e9',
+            color: '#0ea5e9',
+            padding: '0.75rem 1rem',
+            borderRadius: '8px',
+            fontSize: '0.875rem',
+            marginBottom: '1.5rem',
+            textAlign: 'center'
+          }}>
+            <strong>DEMO:</strong> Use admin@remarcacao.com / Admin@2024!
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            
+            {/* Error Message */}
             {error && (
-              <div className="bg-[#ef4444] bg-opacity-10 border border-[#ef4444] text-[#ef4444] px-4 py-3 rounded-lg text-sm">
+              <div style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid #ef4444',
+                color: '#ef4444',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.875rem',
+                marginBottom: '1.5rem'
+              }}>
                 {error}
               </div>
             )}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
+            {/* Email Field */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                color: '#a0a0a0',
+                marginBottom: '0.5rem'
+              }}>
                 Email
               </label>
               <input
-                id="email"
-                name="email"
                 type="email"
                 required
-                className="input-field"
-                placeholder="Digite seu email"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  backgroundColor: '#111111',
+                  border: '1px solid #2a2a2a',
+                  borderRadius: '6px',
+                  color: '#ffffff',
+                  fontSize: '1rem'
+                }}
+                placeholder="admin@remarcacao.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
+            {/* Password Field */}
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                color: '#a0a0a0',
+                marginBottom: '0.5rem'
+              }}>
                 Senha
               </label>
               <input
-                id="password"
-                name="password"
                 type="password"
                 required
-                className="input-field"
-                placeholder="Digite sua senha"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  backgroundColor: '#111111',
+                  border: '1px solid #2a2a2a',
+                  borderRadius: '6px',
+                  color: '#ffffff',
+                  fontSize: '1rem'
+                }}
+                placeholder="Admin@2024!"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 
-            <button
-              type="submit"
+            {/* Submit Button */}
+            <button 
+              type="submit" 
               disabled={loading}
-              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                backgroundColor: loading ? '#999' : '#E50914',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '1rem',
+                fontWeight: '500',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
             >
-              {loading ? 'Entrando...' : 'Entrar'}
+              {loading ? (
+                <>
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid #ffffff',
+                    borderTopColor: 'transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    marginRight: '0.5rem'
+                  }}></div>
+                  Entrando...
+                </>
+              ) : (
+                'Entrar'
+              )}
             </button>
           </form>
         </div>
 
-        <div className="text-center mt-6">
-          <Link href="/" className="text-[#a0a0a0] hover:text-white text-sm">
+        {/* Back Link */}
+        <div style={{
+          textAlign: 'center',
+          marginTop: '1.5rem'
+        }}>
+          <Link href="/" style={{
+            color: '#a0a0a0',
+            textDecoration: 'none',
+            fontSize: '0.875rem'
+          }}>
             ← Voltar ao início
           </Link>
         </div>
       </div>
+
+      {/* CSS for spinner animation */}
+      <style jsx>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

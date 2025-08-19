@@ -16,11 +16,13 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
   const [engineNumber, setEngineNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess(false);
 
     try {
       const token = await user.getIdToken();
@@ -55,6 +57,8 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
+      setSuccess(true);
+
     } catch (error: any) {
       setError(error.message);
       console.error('Error generating DXF:', error);
@@ -67,40 +71,58 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
   const years = Array.from({ length: 25 }, (_, i) => currentYear - i);
 
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-8">
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="flex items-center text-[#a0a0a0] hover:text-white transition-colors"
+          className="flex items-center text-text-secondary hover:text-text-primary transition-colors group"
         >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Voltar
+          Voltar aos Modelos
         </button>
       </div>
 
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Gerar DXF
+        <h2 className="text-3xl font-bold text-text-primary mb-2">
+          3. Gerar Arquivo DXF
         </h2>
-        <p className="text-[#a0a0a0]">
-          <span className="text-[#E50914] font-medium">{selectedBrand.name} {selectedModel.name}</span>
+        <p className="text-text-secondary text-lg mb-2">
+          <span className="text-accent-red font-semibold">{selectedBrand.name} {selectedModel.name}</span>
         </p>
+        <div className="inline-flex items-center px-3 py-1 rounded-full bg-accent-red bg-opacity-10 border border-accent-red">
+          <svg className="w-4 h-4 text-accent-red mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span className="text-accent-red text-sm font-medium">Pronto para gerar</span>
+        </div>
       </div>
 
       <div className="max-w-md mx-auto">
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-[#ef4444] bg-opacity-10 border border-[#ef4444] text-[#ef4444] px-4 py-3 rounded-lg text-sm">
+              <div className="bg-error bg-opacity-10 border border-error text-error px-4 py-3 rounded-lg text-sm flex items-center">
+                <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                 {error}
               </div>
             )}
 
+            {success && (
+              <div className="bg-success bg-opacity-10 border border-success text-success px-4 py-3 rounded-lg text-sm flex items-center">
+                <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Arquivo DXF gerado e baixado com sucesso!
+              </div>
+            )}
+
             <div>
-              <label htmlFor="year" className="block text-sm font-medium text-white mb-2">
-                Ano
+              <label htmlFor="year" className="block text-sm font-medium text-text-primary mb-2">
+                Ano do Veículo
               </label>
               <select
                 id="year"
@@ -111,7 +133,7 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
               >
                 <option value="">Selecione o ano</option>
                 {years.map((y) => (
-                  <option key={y} value={y} className="bg-[#1a1a1a]">
+                  <option key={y} value={y} className="bg-bg-primary">
                     {y}
                   </option>
                 ))}
@@ -119,7 +141,7 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
             </div>
 
             <div>
-              <label htmlFor="chassis" className="block text-sm font-medium text-white mb-2">
+              <label htmlFor="chassis" className="block text-sm font-medium text-text-primary mb-2">
                 Número do Chassi
               </label>
               <input
@@ -133,13 +155,13 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
                 onChange={(e) => setChassisNumber(e.target.value.toUpperCase())}
                 maxLength={17}
               />
-              <p className="text-xs text-[#a0a0a0] mt-1">
+              <p className="text-xs text-text-secondary mt-1">
                 Máximo 17 caracteres
               </p>
             </div>
 
             <div>
-              <label htmlFor="engine" className="block text-sm font-medium text-white mb-2">
+              <label htmlFor="engine" className="block text-sm font-medium text-text-primary mb-2">
                 Número do Motor
               </label>
               <input
@@ -157,9 +179,19 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary"
             >
-              {loading ? 'Gerando DXF...' : 'Gerar DXF'}
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Gerando DXF...
+                </div>
+              ) : (
+                'Gerar Arquivo DXF'
+              )}
             </button>
           </form>
         </div>
