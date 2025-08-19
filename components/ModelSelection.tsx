@@ -42,7 +42,7 @@ export default function ModelSelection({ models, selectedBrand, onSelect, onBack
           <button
             key={model.id}
             onClick={() => onSelect(model)}
-            className="card hover:bg-[#2a2a2a] transition-colors duration-200 text-left group"
+            className="card hover:bg-[#2a2a2a] hover:border-accent-red hover:scale-105 transform transition-all duration-200 text-left group"
           >
             <div className="flex items-center justify-between">
               <div>

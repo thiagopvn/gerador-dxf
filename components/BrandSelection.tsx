@@ -28,7 +28,7 @@ export default function BrandSelection({ brands, onSelect }: BrandSelectionProps
             <button
               key={brand.id}
               onClick={() => onSelect(brand)}
-              className="card hover:bg-[#2a2a2a] transition-colors duration-200 text-center group"
+              className="card hover:bg-[#2a2a2a] hover:border-accent-red hover:scale-105 transform transition-all duration-200 text-center group"
             >
               <div className="flex flex-col items-center space-y-3">
                 <div className="w-16 h-16 relative bg-white rounded-lg p-2">
