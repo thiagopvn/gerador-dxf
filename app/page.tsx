@@ -1,226 +1,156 @@
+'use client';
+
 import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 
 export default function HomePage() {
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#111111',
-      color: 'white',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      
-      {/* Hero Section */}
-      <main style={{
-        flex: '1',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem'
-      }}>
-        <div style={{
-          maxWidth: '800px',
-          margin: '0 auto',
-          textAlign: 'center'
-        }}>
-          
-          {/* Logo/Icon */}
-          <div style={{
-            width: '96px',
-            height: '96px',
-            backgroundColor: '#E50914',
-            borderRadius: '50%',
-            margin: '0 auto 2rem auto',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <span style={{ 
-              color: 'white', 
-              fontSize: '36px', 
-              fontWeight: 'bold' 
-            }}>
-              DXF
-            </span>
-          </div>
+    <div className="min-h-screen">
+      {/* Navigation */}
+      <nav className="border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+                <span className="text-white text-xl font-bold">DXF</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">DXF Generator</h1>
+                <p className="text-xs text-muted">Geração profissional</p>
+              </div>
+            </div>
 
-          {/* Title */}
-          <div style={{ marginBottom: '3rem' }}>
-            <h1 style={{
-              fontSize: '3rem',
-              fontWeight: 'bold',
-              marginBottom: '1rem'
-            }}>
-              DXF<span style={{ color: '#E50914' }}>Generator</span>
+            {/* Navigation Links */}
+            <div className="flex items-center gap-4">
+              <Link href="/login">
+                <Button variant="secondary">Entrar</Button>
+              </Link>
+              <Link href="/login">
+                <Button>Começar Agora</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="pt-20 pb-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-5xl mx-auto">
+            {/* Main Heading */}
+            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-bold mb-8">
+              <span>Geração de</span>
+              <br />
+              <span className="text-primary">Arquivos DXF</span>
+              <br />
+              <span>Profissional</span>
             </h1>
-            <p style={{
-              fontSize: '1.25rem',
-              color: '#a0a0a0',
-              maxWidth: '600px',
-              margin: '0 auto',
-              lineHeight: '1.6'
-            }}>
-              Plataforma profissional para geração de arquivos DXF para remarcação de chassi. 
-              Interface moderna, processo simplificado e precisão garantida.
+
+            {/* Description */}
+            <p className="text-xl text-muted mb-12 max-w-3xl mx-auto">
+              A plataforma mais avançada para remarcação de chassi do mercado. 
+              Precisão técnica, velocidade incomparável e confiabilidade total.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
+              <Link href="/login">
+                <Button className="text-lg px-8 py-4 h-auto">
+                  Acessar Plataforma
+                </Button>
+              </Link>
+              <Button variant="secondary" className="text-lg px-8 py-4 h-auto">
+                Ver Demonstração
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-24 border-t border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl font-bold mb-6">
+              Por que escolher nossa <span className="text-primary">plataforma</span>?
+            </h2>
+            <p className="text-xl text-muted max-w-2xl mx-auto">
+              Recursos exclusivos desenvolvidos para profissionais do setor automotivo
             </p>
           </div>
 
-          {/* Features */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '2rem',
-            marginBottom: '3rem'
-          }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                backgroundColor: '#1a1a1a',
-                border: '1px solid #2a2a2a',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1rem auto'
-              }}>
-                <span style={{ 
-                  color: '#E50914', 
-                  fontSize: '24px', 
-                  fontWeight: 'bold' 
-                }}>
-                  ⚡
-                </span>
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-6">
+                <span className="text-2xl">⚡</span>
               </div>
-              <h3 style={{
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                marginBottom: '0.5rem'
-              }}>
-                Rápido e Eficiente
-              </h3>
-              <p style={{ color: '#a0a0a0' }}>
-                Geração em segundos com interface intuitiva
-              </p>
-            </div>
-
-            <div style={{ textAlign: 'center' }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                backgroundColor: '#1a1a1a',
-                border: '1px solid #2a2a2a',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1rem auto'
-              }}>
-                <span style={{ 
-                  color: '#E50914', 
-                  fontSize: '24px', 
-                  fontWeight: 'bold' 
-                }}>
-                  🔒
-                </span>
+              <h3 className="text-xl font-semibold mb-4">Ultra Rápido</h3>
+              <p className="text-muted">Geração instantânea de arquivos DXF com precisão milimétrica</p>
+            </Card>
+            
+            <Card className="text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-6">
+                <span className="text-2xl">🔒</span>
               </div>
-              <h3 style={{
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                marginBottom: '0.5rem'
-              }}>
-                Seguro e Confiável
-              </h3>
-              <p style={{ color: '#a0a0a0' }}>
-                Autenticação segura e dados protegidos
-              </p>
-            </div>
-
-            <div style={{ textAlign: 'center' }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                backgroundColor: '#1a1a1a',
-                border: '1px solid #2a2a2a',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1rem auto'
-              }}>
-                <span style={{ 
-                  color: '#E50914', 
-                  fontSize: '24px', 
-                  fontWeight: 'bold' 
-                }}>
-                  ⚙️
-                </span>
+              <h3 className="text-xl font-semibold mb-4">Segurança Total</h3>
+              <p className="text-muted">Criptografia de ponta a ponta e proteção completa dos dados</p>
+            </Card>
+            
+            <Card className="text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-6">
+                <span className="text-2xl">⚙️</span>
               </div>
-              <h3 style={{
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                marginBottom: '0.5rem'
-              }}>
-                Configurável
-              </h3>
-              <p style={{ color: '#a0a0a0' }}>
-                Suporte a múltiplas marcas e modelos
-              </p>
-            </div>
+              <h3 className="text-xl font-semibold mb-4">Personalização</h3>
+              <p className="text-muted">Suporte completo para todas as marcas e modelos</p>
+            </Card>
           </div>
-
-          {/* CTA */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '1rem'
-          }}>
-            <Link 
-              href="/login" 
-              style={{
-                display: 'inline-block',
-                width: '200px',
-                padding: '0.75rem 2rem',
-                backgroundColor: '#E50914',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '6px',
-                fontSize: '1rem',
-                fontWeight: '500',
-                textAlign: 'center'
-              }}
-            >
-              Acessar Sistema
-            </Link>
-            <div style={{
-              color: '#a0a0a0',
-              fontSize: '0.875rem'
-            }}>
-              Precisa de acesso? Entre em contato com o administrador
-            </div>
-          </div>
-
         </div>
-      </main>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-24 border-t border-border">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6">
+            Pronto para <span className="text-primary">começar</span>?
+          </h2>
+          <p className="text-xl text-muted mb-12 max-w-2xl mx-auto">
+            Junte-se a milhares de profissionais que já transformaram seus processos 
+            com nossa plataforma
+          </p>
+          <Link href="/login">
+            <Button className="text-lg px-12 py-4 h-auto">
+              Criar Conta Gratuita
+            </Button>
+          </Link>
+          <p className="text-muted text-sm mt-6">
+            Não é necessário cartão de crédito • Acesso imediato
+          </p>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer style={{
-        padding: '2rem 0',
-        borderTop: '1px solid #2a2a2a'
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '0 1rem',
-          textAlign: 'center'
-        }}>
-          <p style={{
-            color: '#a0a0a0',
-            fontSize: '0.875rem'
-          }}>
-            © 2024 DXF Generator. Plataforma de Remarcação de Chassi.
-          </p>
+      <footer className="border-t border-border py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="text-muted text-sm">
+              © 2024 DXF Generator. Todos os direitos reservados.
+            </div>
+            <div className="flex items-center gap-8 text-sm">
+              <Link href="#" className="text-muted hover:text-foreground transition-colors">
+                Termos de Uso
+              </Link>
+              <Link href="#" className="text-muted hover:text-foreground transition-colors">
+                Privacidade
+              </Link>
+              <Link href="#" className="text-muted hover:text-foreground transition-colors">
+                Suporte
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

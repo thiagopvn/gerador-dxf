@@ -2,6 +2,21 @@
 
 import { useState } from 'react';
 import { Model, Brand } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input, Select } from '@/components/ui/Input';
+import { 
+  ArrowLeft, 
+  FileDown, 
+  CheckCircle, 
+  AlertCircle, 
+  FileText, 
+  Calendar, 
+  Hash, 
+  Settings,
+  Zap,
+  Clock
+} from 'lucide-react';
 
 interface DXFGenerationProps {
   selectedModel: Model;
@@ -25,25 +40,21 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
     setSuccess(false);
 
     try {
-      const token = await user.getIdToken();
-      
       const response = await fetch('/api/generate-dxf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           modelId: selectedModel.id,
           year: parseInt(year),
-          chassisNumber,
-          engineNumber,
+          chassisNumber: chassisNumber.trim(),
+          engineNumber: engineNumber.trim(),
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao gerar DXF');
+        throw new Error('Falha na geração do DXF');
       }
 
       const blob = await response.blob();
@@ -56,12 +67,11 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-
+      
       setSuccess(true);
-
-    } catch (error: any) {
-      setError(error.message);
-      console.error('Error generating DXF:', error);
+      setTimeout(() => setSuccess(false), 5000);
+    } catch (err: any) {
+      setError(err.message || 'Erro ao gerar DXF');
     } finally {
       setLoading(false);
     }
@@ -71,129 +81,141 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
   const years = Array.from({ length: 25 }, (_, i) => currentYear - i);
 
   return (
-    <div className="w-full space-y-8">
-      <div className="flex items-center justify-between">
-        <button
+    <div className="w-full animate-fade-in max-w-2xl mx-auto">
+      {/* Back Button */}
+      <div className="mb-8">
+        <Button 
+          variant="ghost" 
           onClick={onBack}
-          className="flex items-center text-text-secondary hover:text-text-primary transition-colors group"
+          className="group"
+          icon={<ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />}
         >
-          <svg className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
           Voltar aos Modelos
-        </button>
+        </Button>
       </div>
 
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-text-primary mb-2">
-          3. Gerar Arquivo DXF
+      {/* Header */}
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-red rounded-2xl glow-red mb-6">
+          <FileText className="w-10 h-10 text-white" />
+        </div>
+        <h2 className="text-4xl font-bold text-foreground mb-4">
+          Gerar Arquivo DXF
         </h2>
-        <p className="text-text-secondary text-lg mb-2">
-          <span className="text-accent-red font-semibold">{selectedBrand.name} {selectedModel.name}</span>
+        <p className="text-lg text-muted mb-6">
+          <span className="text-primary font-semibold">{selectedBrand.name} {selectedModel.name}</span>
         </p>
-        <div className="inline-flex items-center px-3 py-1 rounded-full bg-accent-red bg-opacity-10 border border-accent-red">
-          <svg className="w-4 h-4 text-accent-red mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <span className="text-accent-red text-sm font-medium">Pronto para gerar</span>
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+          <Zap className="w-4 h-4 text-primary" />
+          <span className="text-primary text-sm font-medium">Pronto para gerar</span>
         </div>
       </div>
 
-      <div className="max-w-md mx-auto">
-        <div className="card">
+      {/* Main Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Dados do Veículo</CardTitle>
+        </CardHeader>
+        <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            
+            {/* Error Message */}
             {error && (
-              <div className="bg-error bg-opacity-10 border border-error text-error px-4 py-3 rounded-lg text-sm flex items-center">
-                <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="bg-success bg-opacity-10 border border-success text-success px-4 py-3 rounded-lg text-sm flex items-center">
-                <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Arquivo DXF gerado e baixado com sucesso!
-              </div>
-            )}
-
-            <div>
-              <label htmlFor="year" className="block text-sm font-medium text-text-primary mb-2">
-                Ano do Veículo
-              </label>
-              <select
-                id="year"
-                required
-                className="input-field"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-              >
-                <option value="">Selecione o ano</option>
-                {years.map((y) => (
-                  <option key={y} value={y} className="bg-bg-primary">
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="chassis" className="block text-sm font-medium text-text-primary mb-2">
-                Número do Chassi
-              </label>
-              <input
-                id="chassis"
-                name="chassis"
-                type="text"
-                required
-                className="input-field"
-                placeholder="Digite o número do chassi"
-                value={chassisNumber}
-                onChange={(e) => setChassisNumber(e.target.value.toUpperCase())}
-                maxLength={17}
-              />
-              <p className="text-xs text-text-secondary mt-1">
-                Máximo 17 caracteres
-              </p>
-            </div>
-
-            <div>
-              <label htmlFor="engine" className="block text-sm font-medium text-text-primary mb-2">
-                Número do Motor
-              </label>
-              <input
-                id="engine"
-                name="engine"
-                type="text"
-                required
-                className="input-field"
-                placeholder="Digite o número do motor"
-                value={engineNumber}
-                onChange={(e) => setEngineNumber(e.target.value.toUpperCase())}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Gerando DXF...
+              <div className="bg-error/10 border border-error/20 rounded-lg p-4 animate-slide-down">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-error">{error}</p>
                 </div>
-              ) : (
-                'Gerar Arquivo DXF'
-              )}
-            </button>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {success && (
+              <div className="bg-success/10 border border-success/20 rounded-lg p-4 animate-slide-down">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-success">
+                    Arquivo DXF gerado e baixado com sucesso!
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Form Fields */}
+            <div className="grid gap-6">
+              {/* Year Field */}
+              <div className="relative">
+                <Select
+                  label="Ano do Veículo"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  required
+                  helperText="Selecione o ano de fabricação do veículo"
+                >
+                  <option value="">Selecione o ano</option>
+                  {years.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </Select>
+                <Calendar className="absolute right-3 top-[42px] w-5 h-5 text-muted pointer-events-none" />
+              </div>
+
+              {/* Chassis Number */}
+              <div className="relative">
+                <Input
+                  label="Número do Chassi"
+                  type="text"
+                  placeholder="Digite o número do chassi"
+                  value={chassisNumber}
+                  onChange={(e) => setChassisNumber(e.target.value.toUpperCase())}
+                  maxLength={17}
+                  required
+                  helperText="Máximo 17 caracteres alfanuméricos"
+                />
+                <Hash className="absolute right-3 top-[42px] w-5 h-5 text-muted pointer-events-none" />
+              </div>
+
+              {/* Engine Number */}
+              <div className="relative">
+                <Input
+                  label="Número do Motor"
+                  type="text"
+                  placeholder="Digite o número do motor"
+                  value={engineNumber}
+                  onChange={(e) => setEngineNumber(e.target.value.toUpperCase())}
+                  required
+                  helperText="Número identificador do motor do veículo"
+                />
+                <Settings className="absolute right-3 top-[42px] w-5 h-5 text-muted pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Generate Button */}
+            <div className="pt-4 border-t border-border">
+              <Button
+                type="submit"
+                size="lg"
+                fullWidth
+                loading={loading}
+                disabled={loading}
+                icon={loading ? undefined : <FileDown className="w-5 h-5" />}
+              >
+                {loading ? 'Gerando DXF...' : 'Gerar Arquivo DXF'}
+              </Button>
+            </div>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Info Footer */}
+      <div className="mt-8 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-full">
+          <Clock className="w-4 h-4 text-muted" />
+          <span className="text-sm text-muted">
+            O arquivo será baixado automaticamente
+          </span>
         </div>
       </div>
     </div>

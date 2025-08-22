@@ -4,9 +4,9 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { Shield } from 'lucide-react';
 import Header from '@/components/Header';
+import PageWrapper from '@/components/layout/PageWrapper';
 import AdminPanel from '@/components/AdminPanel';
 
 export default function Admin() {
@@ -15,42 +15,70 @@ export default function Admin() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const idTokenResult = await user.getIdTokenResult();
-        const role = idTokenResult.claims.role;
+    const checkAuth = async () => {
+      try {
+        const { onAuthStateChanged } = await import('firebase/auth');
+        const { doc, getDoc } = await import('firebase/firestore');
+        const { auth, db } = await import('@/lib/firebase');
         
-        if (role !== 'admin') {
-          router.push('/dashboard');
-          return;
-        }
-        
-        setUser({
-          email: user.email,
-          role,
-          getIdToken: () => user.getIdToken(),
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+          if (firebaseUser) {
+            // Usuário autenticado - buscar dados no Firestore
+            const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              const userRole = userData.role || 'user';
+              
+              if (userRole === 'admin') {
+                setUser({
+                  uid: firebaseUser.uid,
+                  email: firebaseUser.email,
+                  role: userRole
+                });
+              } else {
+                // Usuário não é admin - redirecionar para dashboard
+                router.push('/dashboard');
+                return;
+              }
+            } else {
+              // Usuário sem dados no Firestore - redirecionar para dashboard
+              router.push('/dashboard');
+              return;
+            }
+            setLoading(false);
+          } else {
+            // Não autenticado - redirecionar para login
+            router.push('/login');
+          }
         });
-      } else {
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error('Erro na verificação de autenticação:', error);
         router.push('/login');
       }
-      setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
+    checkAuth();
   }, [router]);
 
-  if (loading) {
+  if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
+      <div className="min-h-screen bg-bg-primary">
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+          <div className="w-16 h-16 bg-accent-red rounded-full flex items-center justify-center animate-pulse">
+            <Shield className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-text-secondary">Carregando painel administrativo...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-bg-primary">
       <Header user={user} />
-      <AdminPanel />
+      <AdminPanel user={user} />
     </div>
   );
 }
