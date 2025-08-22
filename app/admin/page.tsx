@@ -6,11 +6,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shield } from 'lucide-react';
 import Header from '@/components/Header';
-import PageWrapper from '@/components/layout/PageWrapper';
 import AdminPanel from '@/components/AdminPanel';
 
+interface User {
+  uid: string;
+  email: string | null;
+  role: string;
+}
+
 export default function Admin() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 

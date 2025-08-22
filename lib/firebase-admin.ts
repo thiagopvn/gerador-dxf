@@ -10,8 +10,8 @@ if (!admin.apps.length) {
       }),
     });
     console.log('Firebase Admin SDK initialized successfully.');
-  } catch (error: any) {
-    console.error('Firebase Admin SDK initialization error:', error.stack);
+  } catch (error: unknown) {
+    console.error('Firebase Admin SDK initialization error:', (error as Error).stack);
   }
 }
 

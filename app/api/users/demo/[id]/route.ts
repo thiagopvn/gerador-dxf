@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Mock users para demonstração (em produção seria no banco)
-let mockUsers = [
+const mockUsers = [
   {
     uid: 'admin-demo-uid',
     email: 'admin@remarcacao.com',
@@ -88,7 +88,7 @@ export async function DELETE(
     mockUsers.splice(userIndex, 1);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erro ao excluir usuário:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },

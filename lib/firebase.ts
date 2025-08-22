@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth, User as FirebaseUser } from 'firebase/auth';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { User } from '@/lib/types';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyDJfW9jfLM9BU2brzlgn3vGWc8f6KDmJWY',
@@ -16,5 +17,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Função para buscar dados do usuário completo com role
+export const getUserWithRole = async (firebaseUser: FirebaseUser): Promise<User | null> => {
+  try {
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDoc = await getDoc(userDocRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      return {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email || '',
+        role: userData.role as 'admin' | 'user',
+        createdAt: userData.createdAt || new Date().toISOString()
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Erro ao buscar dados do usuário:', error);
+    return null;
+  }
+};
 
 export default app;

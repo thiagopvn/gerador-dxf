@@ -4,6 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -48,15 +50,15 @@ export default function LoginPage() {
         });
         router.push('/dashboard');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro no login:', error);
       let errorMessage = 'Erro no login. Tente novamente.';
       
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+      if ((error as { code: string }).code === 'auth/user-not-found' || (error as { code: string }).code === 'auth/wrong-password') {
         errorMessage = 'Email ou senha inválidos.';
-      } else if (error.code === 'auth/invalid-email') {
+      } else if ((error as { code: string }).code === 'auth/invalid-email') {
         errorMessage = 'Email inválido.';
-      } else if (error.code === 'auth/too-many-requests') {
+      } else if ((error as { code: string }).code === 'auth/too-many-requests') {
         errorMessage = 'Muitas tentativas. Tente novamente mais tarde.';
       }
       
@@ -69,9 +71,18 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold">Acesse sua Conta</h1>
-          <p className="text-muted mt-2">Use suas credenciais para acessar o painel</p>
+        <div className="flex flex-col items-center gap-4">
+          <Link href="/" className="self-start">
+            <Button variant="secondary" className="w-fit">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar ao Início
+            </Button>
+          </Link>
+          
+          <div className="text-center">
+            <h1 className="text-4xl font-bold">Acesse sua Conta</h1>
+            <p className="text-muted mt-2">Use suas credenciais para acessar o painel</p>
+          </div>
         </div>
 
         <Card>
@@ -115,7 +126,7 @@ export default function LoginPage() {
         </Card>
         
         <div className="text-center">
-          <a href="/" className="text-sm text-primary hover:underline">← Voltar ao início</a>
+          <Link href="/" className="text-sm text-primary hover:underline">← Voltar ao início</Link>
         </div>
       </div>
     </main>

@@ -5,7 +5,6 @@ import { adminAuth, adminDb } from '@/lib/firebase-admin';
 async function verifyAdmin(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
-    
     if (!authHeader?.startsWith('Bearer ')) {
       return null;
     }
@@ -21,19 +20,17 @@ async function verifyAdmin(request: NextRequest) {
     }
 
     const userData = userDoc.data();
-    
     if (userData?.role !== 'admin') {
       return null;
     }
 
     return { uid: decodedToken.uid, ...userData };
-  } catch (error) {
-    console.error('Erro na verificação admin:', error);
+  } catch {
     return null;
   }
 }
 
-// GET - Listar usuários (apenas para admins)
+// GET - Listar marcas
 export async function GET(request: NextRequest) {
   try {
     const adminUser = await verifyAdmin(request);
@@ -45,15 +42,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const usersSnapshot = await adminDb.collection('users').get();
-    const users = usersSnapshot.docs.map(doc => ({
-      uid: doc.id,
+    const brandsSnapshot = await adminDb.collection('brands').orderBy('order').get();
+    const brands = brandsSnapshot.docs.map(doc => ({
+      id: doc.id,
       ...doc.data()
     }));
 
-    return NextResponse.json({ users });
+    return NextResponse.json({ brands });
   } catch (error) {
-    console.error('Erro ao listar usuários:', error);
+    console.error('Erro ao listar marcas:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }
@@ -61,7 +58,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Criar usuário (apenas para admins)
+// POST - Criar marca
 export async function POST(request: NextRequest) {
   try {
     const adminUser = await verifyAdmin(request);
@@ -73,57 +70,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email, password, role } = await request.json();
+    const { id, name, active, order } = await request.json();
 
-    if (!email || !password || !role) {
+    if (!id || !name || order === undefined) {
       return NextResponse.json(
-        { error: 'Email, senha e role são obrigatórios' },
+        { error: 'ID, nome e ordem são obrigatórios' },
         { status: 400 }
       );
     }
 
-    if (role !== 'admin' && role !== 'user') {
+    // Verificar se a marca já existe
+    const existingBrand = await adminDb.collection('brands').doc(id).get();
+    if (existingBrand.exists) {
       return NextResponse.json(
-        { error: 'Role deve ser "admin" ou "user"' },
-        { status: 400 }
+        { error: 'Uma marca com este ID já existe' },
+        { status: 409 }
       );
     }
 
-    // Criar usuário no Firebase Auth
-    const userRecord = await adminAuth.createUser({
-      email,
-      password,
-      emailVerified: true
-    });
-
-    // Criar documento no Firestore
-    await adminDb.collection('users').doc(userRecord.uid).set({
-      email,
-      role,
+    // Criar marca no Firestore
+    await adminDb.collection('brands').doc(id).set({
+      name,
+      active: active ?? true,
+      order: Number(order),
       createdAt: new Date(),
       createdBy: adminUser.uid
     });
 
     return NextResponse.json({ 
       success: true,
-      uid: userRecord.uid
+      id
     });
-  } catch (error: unknown) {
-    console.error('Erro ao criar usuário:', error);
-    
-    let errorMessage = 'Erro interno do servidor';
-    const errorCode = (error as { code: string }).code;
-    if (errorCode === 'auth/email-already-exists') {
-      errorMessage = 'Este email já está em uso';
-    } else if (errorCode === 'auth/invalid-email') {
-      errorMessage = 'Email inválido';
-    } else if (errorCode === 'auth/weak-password') {
-      errorMessage = 'Senha muito fraca';
-    }
-
+  } catch (error) {
+    console.error('Erro ao criar marca:', error);
     return NextResponse.json(
-      { error: errorMessage },
-      { status: 400 }
+      { error: 'Erro interno do servidor' },
+      { status: 500 }
     );
   }
 }

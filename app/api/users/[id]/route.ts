@@ -25,7 +25,7 @@ async function verifyAdmin(request: NextRequest) {
     }
 
     return { uid: decodedToken.uid, ...userData };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -124,17 +124,17 @@ export async function DELETE(
     await adminDb.collection('users').doc(userId).delete();
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erro ao excluir usuário:', error);
     
     let errorMessage = 'Erro interno do servidor';
-    if (error.code === 'auth/user-not-found') {
+    if ((error as { code: string }).code === 'auth/user-not-found') {
       errorMessage = 'Usuário não encontrado';
     }
 
     return NextResponse.json(
       { error: errorMessage },
-      { status: error.code === 'auth/user-not-found' ? 404 : 500 }
+      { status: (error as { code: string }).code === 'auth/user-not-found' ? 404 : 500 }
     );
   }
 }

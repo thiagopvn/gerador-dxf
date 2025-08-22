@@ -20,7 +20,7 @@ const mockUsers = [
 ];
 
 // GET - Listar usuários (demo)
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Em uma implementação real, verificar JWT token do Firebase
     return NextResponse.json({ users: mockUsers });
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       success: true,
       uid: newUser.uid
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erro ao criar usuário:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },

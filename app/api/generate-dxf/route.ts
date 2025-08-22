@@ -2,6 +2,44 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { DXFGenerationRequest } from '@/lib/types';
 
+interface FontMapping {
+  modelId: string;
+  yearStart: number;
+  yearEnd: number;
+  fontFamily: string;
+  fontSize: number;
+  spacing: number;
+  fontFileName?: string;
+  modelName?: string;
+  settings?: {
+    fontSize?: number;
+    letterSpacing?: number;
+  };
+}
+
+interface PathCommand {
+  type: string;
+  x?: number;
+  y?: number;
+  x1?: number;
+  y1?: number;
+}
+
+interface Glyph {
+  getPath: (x: number, y: number, size: number) => { commands: PathCommand[] };
+  advanceWidth?: number;
+}
+
+interface FirebaseError {
+  code: string;
+  message: string;
+}
+
+interface DXFWriter {
+  addPolyline: (points: [number, number][]) => void;
+  toDxfString: () => string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // 1. Autenticação e Autorização
@@ -14,8 +52,8 @@ export async function POST(request: NextRequest) {
     
     try {
       await adminAuth.verifyIdToken(token);
-    } catch (authError: any) {
-      if (authError.code === 'auth/id-token-expired') {
+    } catch (authError: unknown) {
+      if ((authError as FirebaseError).code === 'auth/id-token-expired') {
         return NextResponse.json({ error: 'Authentication token expired' }, { status: 401 });
       }
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 });
@@ -38,9 +76,9 @@ export async function POST(request: NextRequest) {
       .limit(1)
       .get();
 
-    let fontMapping: any = null;
+    let fontMapping: FontMapping | null = null;
     if (!fontMappingsSnapshot.empty) {
-      fontMapping = fontMappingsSnapshot.docs[0].data();
+      fontMapping = fontMappingsSnapshot.docs[0].data() as FontMapping;
     }
 
     // 4. Tentar carregar e usar fontes vetorizadas (dentro do try-catch)
@@ -73,36 +111,36 @@ export async function POST(request: NextRequest) {
             const glyphs = font.stringToGlyphs(text);
             let currentX = x;
             
-            glyphs.forEach((glyph: any) => {
+            glyphs.forEach((glyph: Glyph) => {
               const path = glyph.getPath(currentX, y, size);
               const commands = path.commands;
               
-              let points: any[] = [];
-              commands.forEach((cmd: any) => {
+              let points: [number, number][] = [];
+              commands.forEach((cmd: PathCommand) => {
                 if (cmd.type === 'M' || cmd.type === 'L') {
-                  points.push([cmd.x, cmd.y]);
+                  points.push([cmd.x || 0, cmd.y || 0]);
                 } else if (cmd.type === 'Q') {
                   // Aproximar curva quadrática com linhas
                   for (let t = 0; t <= 1; t += 0.1) {
-                    const x = (1 - t) * (1 - t) * (points[points.length - 1]?.[0] || cmd.x) +
-                              2 * (1 - t) * t * cmd.x1 +
-                              t * t * cmd.x;
-                    const y = (1 - t) * (1 - t) * (points[points.length - 1]?.[1] || cmd.y) +
-                              2 * (1 - t) * t * cmd.y1 +
-                              t * t * cmd.y;
+                    const x = (1 - t) * (1 - t) * (points[points.length - 1]?.[0] || cmd.x || 0) +
+                              2 * (1 - t) * t * (cmd.x1 || 0) +
+                              t * t * (cmd.x || 0);
+                    const y = (1 - t) * (1 - t) * (points[points.length - 1]?.[1] || cmd.y || 0) +
+                              2 * (1 - t) * t * (cmd.y1 || 0) +
+                              t * t * (cmd.y || 0);
                     points.push([x, y]);
                   }
                 } else if (cmd.type === 'Z' && points.length > 1) {
-                  (dxf as any).addPolyline(points);
+                  (dxf as unknown as DXFWriter).addPolyline(points);
                   points = [];
                 }
               });
               
               if (points.length > 1) {
-                (dxf as any).addPolyline(points);
+                (dxf as unknown as DXFWriter).addPolyline(points);
               }
               
-              currentX += glyph.advanceWidth * size / 1000 * letterSpacing;
+              currentX += (glyph.advanceWidth || 500) * size / 1000 * letterSpacing;
             });
           };
           
@@ -265,7 +303,7 @@ EOF
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error generating DXF:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

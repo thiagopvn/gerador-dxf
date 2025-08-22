@@ -4,27 +4,34 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Plus, Edit2, Trash2, Shield, UserCheck } from 'lucide-react';
+import { User, Plus, Edit2, Trash2, Shield, UserCheck, ArrowLeft } from 'lucide-react';
 import Header from '@/components/Header';
-import PageWrapper from '@/components/layout/PageWrapper';
-import Card from '@/components/layout/Card';
-import { FormField, Input, Button, Select } from '@/components/layout/FormField';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input, Select } from '@/components/ui/Input';
 import ModalWrapper from '@/components/layout/ModalWrapper';
+import { auth } from '@/lib/firebase';
 
-interface User {
+interface UserData {
   uid: string;
   email: string;
   role: string;
   createdAt: Date;
 }
 
+interface AuthUser {
+  uid: string;
+  email: string | null;
+  role: string;
+}
+
 export default function AdminUsers() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<'create' | 'edit' | 'delete'>('create');
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [formData, setFormData] = useState({ email: '', password: '', role: 'user' });
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
@@ -77,17 +84,26 @@ export default function AdminUsers() {
 
   const loadUsers = async () => {
     try {
-      // Usando API de demonstração (trocar por /api/users em produção)
-      const response = await fetch('/api/users/demo');
-
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.users.sort((a: User, b: User) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        ));
-      } else {
-        setError('Erro ao carregar usuários');
+      const user = auth.currentUser;
+      if (!user) {
+        setError('Usuário não autenticado');
+        return;
       }
+
+      // Usar Firebase client diretamente
+      const { collection, getDocs } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+      
+      const usersSnapshot = await getDocs(collection(db, 'users'));
+      const usersData = usersSnapshot.docs.map(doc => ({
+        uid: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || new Date()
+      })) as UserData[];
+
+      setUsers(usersData.sort((a: UserData, b: UserData) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ));
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
       setError('Erro ao carregar usuários');
@@ -99,25 +115,52 @@ export default function AdminUsers() {
     setError('');
 
     try {
-      // Usando API de demonstração (trocar por /api/users em produção)
-      const response = await fetch('/api/users/demo', {
+      // Usar a REST API do Firebase Auth diretamente
+      const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+      const SIGNUP_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`;
+
+      const response = await fetch(SIGNUP_URL, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          returnSecureToken: true
+        })
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // Criar documento do usuário no Firestore
+        const { doc, setDoc } = await import('firebase/firestore');
+        const { db } = await import('@/lib/firebase');
+        
+        await setDoc(doc(db, 'users', data.localId), {
+          email: formData.email,
+          role: formData.role,
+          createdAt: new Date(),
+          isActive: true
+        });
+
         await loadUsers();
         setShowModal(false);
         setFormData({ email: '', password: '', role: 'user' });
       } else {
-        setError(data.error || 'Erro ao criar usuário');
+        let errorMessage = 'Erro ao criar usuário';
+        if (data.error?.message === 'EMAIL_EXISTS') {
+          errorMessage = 'Este email já está em uso';
+        } else if (data.error?.message === 'INVALID_EMAIL') {
+          errorMessage = 'Email inválido';
+        } else if (data.error?.message === 'WEAK_PASSWORD') {
+          errorMessage = 'Senha muito fraca';
+        }
+        setError(errorMessage);
       }
     } catch (error) {
+      console.error('Erro ao criar usuário:', error);
       setError('Erro ao criar usuário');
     } finally {
       setActionLoading(false);
@@ -131,26 +174,21 @@ export default function AdminUsers() {
     setError('');
 
     try {
-      // Usando API de demonstração (trocar por /api/users/${selectedUser.uid} em produção)
-      const response = await fetch(`/api/users/demo/${selectedUser.uid}`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ role: formData.role })
+      // Atualizar documento do usuário no Firestore
+      const { doc, updateDoc } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+      
+      await updateDoc(doc(db, 'users', selectedUser.uid), {
+        role: formData.role,
+        updatedAt: new Date()
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        await loadUsers();
-        setShowModal(false);
-        setSelectedUser(null);
-        setFormData({ email: '', password: '', role: 'user' });
-      } else {
-        setError(data.error || 'Erro ao atualizar usuário');
-      }
+      await loadUsers();
+      setShowModal(false);
+      setSelectedUser(null);
+      setFormData({ email: '', password: '', role: 'user' });
     } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
       setError('Erro ao atualizar usuário');
     } finally {
       setActionLoading(false);
@@ -164,21 +202,21 @@ export default function AdminUsers() {
     setError('');
 
     try {
-      // Usando API de demonstração (trocar por /api/users/${selectedUser.uid} em produção)
-      const response = await fetch(`/api/users/demo/${selectedUser.uid}`, {
-        method: 'DELETE'
+      // Marcar usuário como inativo ao invés de deletar completamente
+      // (Deletar usuários do Firebase Auth requer privilégios admin especiais)
+      const { doc, updateDoc } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+      
+      await updateDoc(doc(db, 'users', selectedUser.uid), {
+        isActive: false,
+        deletedAt: new Date()
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        await loadUsers();
-        setShowModal(false);
-        setSelectedUser(null);
-      } else {
-        setError(data.error || 'Erro ao excluir usuário');
-      }
+      await loadUsers();
+      setShowModal(false);
+      setSelectedUser(null);
     } catch (error) {
+      console.error('Erro ao excluir usuário:', error);
       setError('Erro ao excluir usuário');
     } finally {
       setActionLoading(false);
@@ -192,7 +230,7 @@ export default function AdminUsers() {
     setShowModal(true);
   };
 
-  const openEditModal = (userToEdit: User) => {
+  const openEditModal = (userToEdit: UserData) => {
     setModalType('edit');
     setSelectedUser(userToEdit);
     setFormData({ email: userToEdit.email, password: '', role: userToEdit.role });
@@ -200,7 +238,7 @@ export default function AdminUsers() {
     setShowModal(true);
   };
 
-  const openDeleteModal = (userToDelete: User) => {
+  const openDeleteModal = (userToDelete: UserData) => {
     setModalType('delete');
     setSelectedUser(userToDelete);
     setError('');
@@ -223,25 +261,37 @@ export default function AdminUsers() {
   return (
     <div className="min-h-screen bg-bg-primary">
       <Header user={user} />
-      <PageWrapper>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           {/* Header da página */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary">Gerenciar Usuários</h1>
-              <p className="text-text-secondary mt-2">Administre as contas de usuário do sistema</p>
-            </div>
-            <Button onClick={openCreateModal} className="!w-auto">
-              <Plus className="w-4 h-4" />
-              Novo Usuário
+          <div className="flex flex-col gap-4">
+            <Button 
+              variant="secondary" 
+              onClick={() => router.push('/admin')}
+              className="w-fit"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar ao Painel
             </Button>
+            
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-text-primary">Gerenciar Usuários</h1>
+                <p className="text-text-secondary mt-2">Administre as contas de usuário do sistema</p>
+              </div>
+              <Button onClick={openCreateModal} className="w-full sm:w-auto">
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Usuário
+              </Button>
+            </div>
           </div>
 
           {/* Lista de usuários */}
           <Card>
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-text-primary">Usuários Cadastrados</h2>
-              
+            <CardHeader>
+              <CardTitle>Usuários Cadastrados</CardTitle>
+            </CardHeader>
+            <CardContent>
               {users.length === 0 ? (
                 <div className="text-center py-12">
                   <User className="w-12 h-12 text-text-secondary mx-auto mb-4" />
@@ -259,8 +309,10 @@ export default function AdminUsers() {
                       </tr>
                     </thead>
                     <tbody>
-                      {users.map((userData) => (
-                        <tr key={userData.uid} className="border-b border-border-secondary hover:bg-bg-primary">
+                      {users.map((userData, index) => (
+                        <tr key={userData.uid} className={`border-b border-border-secondary hover:bg-bg-primary transition-colors ${
+                          index % 2 === 0 ? 'bg-bg-secondary/30' : ''
+                        }`}>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
                               <div className="w-8 h-8 bg-accent-red rounded-full flex items-center justify-center">
@@ -308,67 +360,84 @@ export default function AdminUsers() {
                   </table>
                 </div>
               )}
-            </div>
+            </CardContent>
           </Card>
         </div>
+      </main>
 
-        {/* Modal */}
-        {showModal && (
-          <ModalWrapper 
-            isOpen={showModal} 
-            onClose={() => setShowModal(false)} 
-            title={
-              modalType === 'create' ? 'Novo Usuário' : 
-              modalType === 'edit' ? 'Editar Usuário' : 
-              'Excluir Usuário'
-            }
-          >
-            <div className="space-y-4">
-              {error && (
-                <div className="bg-red-500/10 border border-red-500 rounded-lg p-4">
-                  <p className="text-sm text-red-400">{error}</p>
-                </div>
-              )}
+      {/* Modal */}
+      {showModal && (
+        <ModalWrapper 
+          isOpen={showModal} 
+          onClose={() => setShowModal(false)} 
+          title={
+            modalType === 'create' ? 'Novo Usuário' : 
+            modalType === 'edit' ? 'Editar Usuário' : 
+            'Excluir Usuário'
+          }
+        >
+          <div className="space-y-4">
+            {error && (
+              <div className="bg-red-500/10 border border-red-500 rounded-lg p-4">
+                <p className="text-sm text-red-400">{error}</p>
+              </div>
+            )}
 
-              {modalType === 'create' && (
+            {modalType === 'create' && (
                 <>
-                  <FormField label="Email" required>
-                    <Input
-                      type="email"
-                      placeholder="usuario@exemplo.com"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      required
-                    />
-                  </FormField>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-primary mb-2">Email</label>
+                      <Input
+                        type="email"
+                        placeholder="usuario@exemplo.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        required
+                      />
+                    </div>
 
-                  <FormField label="Senha" required>
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      required
-                    />
-                  </FormField>
+                    <div>
+                      <label className="block text-sm font-medium text-text-primary mb-2">Senha</label>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        required
+                      />
+                    </div>
 
-                  <FormField label="Tipo de usuário" required>
-                    <Select 
-                      value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      required
-                    >
-                      <option value="user">Usuário</option>
-                      <option value="admin">Administrador</option>
-                    </Select>
-                  </FormField>
+                    <div>
+                      <label className="block text-sm font-medium text-text-primary mb-2">Tipo de usuário</label>
+                      <Select 
+                        value={formData.role}
+                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                        required
+                      >
+                        <option value="user">Usuário</option>
+                        <option value="admin">Administrador</option>
+                      </Select>
+                    </div>
+                  </div>
 
                   <div className="flex gap-3 pt-4">
-                    <Button variant="secondary" onClick={() => setShowModal(false)} fullWidth>
+                    <Button variant="secondary" onClick={() => setShowModal(false)} className="flex-1">
                       Cancelar
                     </Button>
-                    <Button onClick={handleCreateUser} loading={actionLoading} fullWidth>
-                      Criar Usuário
+                    <Button 
+                      onClick={handleCreateUser} 
+                      disabled={actionLoading}
+                      className="flex-1"
+                    >
+                      {actionLoading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                          Criando...
+                        </>
+                      ) : (
+                        'Criar Usuário'
+                      )}
                     </Button>
                   </div>
                 </>
@@ -376,27 +445,42 @@ export default function AdminUsers() {
 
               {modalType === 'edit' && selectedUser && (
                 <>
-                  <FormField label="Email">
-                    <Input value={selectedUser.email} disabled />
-                  </FormField>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-primary mb-2">Email</label>
+                      <Input value={selectedUser.email} disabled className="opacity-60" />
+                    </div>
 
-                  <FormField label="Tipo de usuário" required>
-                    <Select 
-                      value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      required
-                    >
-                      <option value="user">Usuário</option>
-                      <option value="admin">Administrador</option>
-                    </Select>
-                  </FormField>
+                    <div>
+                      <label className="block text-sm font-medium text-text-primary mb-2">Tipo de usuário</label>
+                      <Select 
+                        value={formData.role}
+                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                        required
+                      >
+                        <option value="user">Usuário</option>
+                        <option value="admin">Administrador</option>
+                      </Select>
+                    </div>
+                  </div>
 
                   <div className="flex gap-3 pt-4">
-                    <Button variant="secondary" onClick={() => setShowModal(false)} fullWidth>
+                    <Button variant="secondary" onClick={() => setShowModal(false)} className="flex-1">
                       Cancelar
                     </Button>
-                    <Button onClick={handleUpdateUser} loading={actionLoading} fullWidth>
-                      Salvar Alterações
+                    <Button 
+                      onClick={handleUpdateUser} 
+                      disabled={actionLoading}
+                      className="flex-1"
+                    >
+                      {actionLoading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                          Salvando...
+                        </>
+                      ) : (
+                        'Salvar Alterações'
+                      )}
                     </Button>
                   </div>
                 </>
@@ -418,11 +502,22 @@ export default function AdminUsers() {
                   </div>
 
                   <div className="flex gap-3 pt-4">
-                    <Button variant="secondary" onClick={() => setShowModal(false)} fullWidth>
+                    <Button variant="secondary" onClick={() => setShowModal(false)} className="flex-1">
                       Cancelar
                     </Button>
-                    <Button variant="danger" onClick={handleDeleteUser} loading={actionLoading} fullWidth>
-                      Sim, Excluir
+                    <Button 
+                      onClick={handleDeleteUser} 
+                      disabled={actionLoading}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      {actionLoading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                          Excluindo...
+                        </>
+                      ) : (
+                        'Sim, Excluir'
+                      )}
                     </Button>
                   </div>
                 </>
@@ -430,7 +525,6 @@ export default function AdminUsers() {
             </div>
           </ModalWrapper>
         )}
-      </PageWrapper>
     </div>
   );
 }

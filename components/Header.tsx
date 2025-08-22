@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 
 interface HeaderProps {
   user?: {
-    email: string;
+    email: string | null;
     role: string;
   };
 }
@@ -62,7 +62,7 @@ export default function Header({ user }: HeaderProps) {
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-medium text-foreground">
-                    {user.email}
+                    {user.email || 'Email não disponível'}
                   </div>
                   <div className="text-xs text-muted">
                     {isAdmin ? 'Administrador' : 'Usuário'}

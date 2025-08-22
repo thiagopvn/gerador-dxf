@@ -21,12 +21,12 @@ export default function BrandSelection({ brands, onSelect }: BrandSelectionProps
   ];
 
   // Add logos to brands if not present
-  const brandsWithLogos = (brands.length > 0 ? brands : defaultBrands).map((brand: any) => ({
+  const brandsWithLogos = (brands.length > 0 ? brands : defaultBrands).map((brand: Brand) => ({
     ...brand,
     logo: brand.logo || `/logos/${brand.name.toLowerCase()}.png`
   }));
 
-  const activeBrands = brandsWithLogos.filter((brand: any) => brand.active);
+  const activeBrands = brandsWithLogos.filter((brand: Brand) => brand.active);
 
   return (
     <div className="w-full">
@@ -35,13 +35,14 @@ export default function BrandSelection({ brands, onSelect }: BrandSelectionProps
         <p className="text-muted mt-2">Escolha a marca do veículo para continuar</p>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {activeBrands.map((brand: any) => (
+        {activeBrands.map((brand: Brand) => (
           <div 
             key={brand.id} 
             className="bg-card border border-border rounded-lg p-6 text-center cursor-pointer hover:border-primary hover:scale-105 transition-all duration-200 flex flex-col items-center justify-center"
             onClick={() => onSelect(brand)}
           >
             <div className="w-24 h-24 mb-4 flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={brand.logo} 
                 alt={`Logo ${brand.name}`}

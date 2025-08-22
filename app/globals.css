@@ -4,10 +4,14 @@
   --color-background: #000000;
   --color-foreground: #ffffff;
   --color-card: #111111;
+  --color-card-hover: #1a1a1a;
   --color-border: #2a2a2a;
   --color-muted: #a0a0a0;
   --color-primary: #E50914;
   --color-primary-hover: #B20710;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
 }
 
 @layer base {
@@ -16,5 +20,60 @@
     color: theme(colors.foreground);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .gradient-red {
+    background: linear-gradient(135deg, #E50914 0%, #B20710 100%);
+  }
+  
+  .glow-red {
+    box-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }

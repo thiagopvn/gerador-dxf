@@ -12,9 +12,15 @@ import { Brand, Model } from '@/lib/types';
 
 type Step = 'brands' | 'models' | 'generate';
 
+interface User {
+  uid: string;
+  email: string | null;
+  role: string;
+}
+
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [step, setStep] = useState<Step>('brands');
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [selectedModel, setSelectedModel] = useState<Model | null>(null);
@@ -31,11 +37,18 @@ export default function Dashboard() {
           if (firebaseUser) {
             const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
             const userData = userDoc.exists() ? userDoc.data() : {};
+            const userRole = userData.role || 'user';
+            
+            // Redireciona admin para o painel administrativo
+            if (userRole === 'admin') {
+              router.push('/admin');
+              return;
+            }
             
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email,
-              role: userData.role || 'user'
+              role: userRole
             });
             setLoading(false);
           } else {

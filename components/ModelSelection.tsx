@@ -2,6 +2,7 @@
 
 import { Model, Brand } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
+import { ArrowLeft } from 'lucide-react';
 
 interface ModelSelectionProps {
   models: Model[];
@@ -26,8 +27,13 @@ export default function ModelSelection({ models, selectedBrand, onSelect, onBack
     <div className="w-full">
       {/* Back Button */}
       <div className="mb-8">
-        <Button variant="secondary" onClick={onBack} className="w-auto px-4">
-          ← Voltar às Marcas
+        <Button 
+          variant="secondary" 
+          onClick={onBack}
+          className="group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform mr-2" />
+          Voltar às Marcas
         </Button>
       </div>
 
