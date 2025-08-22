@@ -108,7 +108,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
                       {new Date(user.createdAt).toLocaleDateString('pt-BR')}
                     </td>
                     <td className="py-4 px-6">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="secondary">
                         Editar
                       </Button>
                     </td>
@@ -131,7 +131,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {brands.map((brand, index) => (
-          <Card key={brand.id} interactive className="group animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+          <Card key={brand.id} interactive className="group animate-slide-up">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -154,7 +154,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
               
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <span className="text-sm text-muted">Ordem: {brand.order}</span>
-                <Button variant="ghost" size="sm" className="group-hover:bg-primary group-hover:text-white">
+                <Button variant="secondary" className="group-hover:bg-primary group-hover:text-white">
                   Configurar
                 </Button>
               </div>
@@ -216,7 +216,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
                       </span>
                     </td>
                     <td className="py-4 px-6">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="secondary">
                         Editar
                       </Button>
                     </td>
@@ -239,7 +239,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {fontMappings.slice(0, 6).map((mapping, index) => (
-          <Card key={mapping.id} className="animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+          <Card key={mapping.id} className="animate-slide-up">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -270,7 +270,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
                 </div>
               </div>
               
-              <Button variant="secondary" size="sm" fullWidth className="mt-4">
+              <Button variant="secondary" className="mt-4 w-full">
                 Configurar Fonte
               </Button>
             </CardContent>
@@ -315,7 +315,8 @@ export default function AdminPanel({ user }: AdminPanelProps) {
               <h1 className="text-lg font-bold text-foreground">Painel Admin</h1>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout} icon={<LogOut className="w-4 h-4" />}>
+          <Button variant="secondary" onClick={handleLogout}>
+            <LogOut className="w-4 h-4" />
           </Button>
         </div>
       </header>
@@ -382,10 +383,10 @@ export default function AdminPanel({ user }: AdminPanelProps) {
             <div className="hidden lg:block pt-6 border-t border-border">
               <Button 
                 variant="secondary" 
-                fullWidth 
+                className="w-full"
                 onClick={handleLogout}
-                icon={<LogOut className="w-4 h-4" />}
               >
+                <LogOut className="w-4 h-4 mr-2" />
                 Sair do Sistema
               </Button>
             </div>

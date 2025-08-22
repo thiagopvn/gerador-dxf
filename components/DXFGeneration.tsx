@@ -85,11 +85,11 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
       {/* Back Button */}
       <div className="mb-8">
         <Button 
-          variant="ghost" 
+          variant="secondary" 
           onClick={onBack}
           className="group"
-          icon={<ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />}
         >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform mr-2" />
           Voltar aos Modelos
         </Button>
       </div>
@@ -164,30 +164,34 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
 
               {/* Chassis Number */}
               <div className="relative">
-                <Input
-                  label="Número do Chassi"
-                  type="text"
-                  placeholder="Digite o número do chassi"
-                  value={chassisNumber}
-                  onChange={(e) => setChassisNumber(e.target.value.toUpperCase())}
-                  maxLength={17}
-                  required
-                  helperText="Máximo 17 caracteres alfanuméricos"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">Número do Chassi</label>
+                  <Input
+                    type="text"
+                    placeholder="Digite o número do chassi"
+                    value={chassisNumber}
+                    onChange={(e) => setChassisNumber(e.target.value.toUpperCase())}
+                    maxLength={17}
+                    required
+                  />
+                  <p className="text-xs text-text-secondary mt-1">Máximo 17 caracteres alfanuméricos</p>
+                </div>
                 <Hash className="absolute right-3 top-[42px] w-5 h-5 text-muted pointer-events-none" />
               </div>
 
               {/* Engine Number */}
               <div className="relative">
-                <Input
-                  label="Número do Motor"
-                  type="text"
-                  placeholder="Digite o número do motor"
-                  value={engineNumber}
-                  onChange={(e) => setEngineNumber(e.target.value.toUpperCase())}
-                  required
-                  helperText="Número identificador do motor do veículo"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">Número do Motor</label>
+                  <Input
+                    type="text"
+                    placeholder="Digite o número do motor"
+                    value={engineNumber}
+                    onChange={(e) => setEngineNumber(e.target.value.toUpperCase())}
+                    required
+                  />
+                  <p className="text-xs text-text-secondary mt-1">Número identificador do motor do veículo</p>
+                </div>
                 <Settings className="absolute right-3 top-[42px] w-5 h-5 text-muted pointer-events-none" />
               </div>
             </div>
@@ -196,13 +200,17 @@ export default function DXFGeneration({ selectedModel, selectedBrand, onBack, us
             <div className="pt-4 border-t border-border">
               <Button
                 type="submit"
-                size="lg"
-                fullWidth
-                loading={loading}
+                className="w-full"
                 disabled={loading}
-                icon={loading ? undefined : <FileDown className="w-5 h-5" />}
               >
-                {loading ? 'Gerando DXF...' : 'Gerar Arquivo DXF'}
+                {loading ? (
+                  <span>Gerando DXF...</span>
+                ) : (
+                  <>
+                    <FileDown className="w-5 h-5 mr-2" />
+                    Gerar Arquivo DXF
+                  </>
+                )}
               </Button>
             </div>
           </form>

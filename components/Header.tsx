@@ -72,12 +72,11 @@ export default function Header({ user }: HeaderProps) {
 
               {/* Sign Out Button */}
               <Button
-                variant="outline"
-                size="sm"
+                variant="secondary"
                 onClick={handleSignOut}
-                icon={<LogOut className="w-4 h-4" />}
                 className="hover:bg-error hover:border-error hover:text-white transition-colors"
               >
+                <LogOut className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Sair</span>
               </Button>
             </>
