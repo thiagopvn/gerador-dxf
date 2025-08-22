@@ -26,3 +26,45 @@ export function Card({
   );
 }
 
+export function CardContent({ 
+  children, 
+  className = '' 
+}: { 
+  children: React.ReactNode; 
+  className?: string 
+}) {
+  return (
+    <div className={`p-6 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+export function CardHeader({ 
+  children, 
+  className = '' 
+}: { 
+  children: React.ReactNode; 
+  className?: string 
+}) {
+  return (
+    <div className={`px-6 py-4 border-b border-border ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+export function CardTitle({ 
+  children, 
+  className = '' 
+}: { 
+  children: React.ReactNode; 
+  className?: string 
+}) {
+  return (
+    <h3 className={`text-lg font-semibold text-text-primary ${className}`}>
+      {children}
+    </h3>
+  );
+}
+
