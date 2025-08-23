@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import BrandSelection from '@/components/BrandSelection';
 import ModelSelection from '@/components/ModelSelection';
+import DXFGenerationModal from '@/components/DXFGenerationModal';
 import { Brand, Model } from '@/lib/types';
 
 type Step = 'brands' | 'models' | 'generate';
@@ -24,6 +25,7 @@ export default function Dashboard() {
   const [step, setStep] = useState<Step>('brands');
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [selectedModel, setSelectedModel] = useState<Model | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -192,9 +194,22 @@ export default function Dashboard() {
                 <p className="text-muted mb-6">
                   {selectedBrand.name} - {selectedModel.name}
                 </p>
-                <Button>Gerar Arquivo DXF</Button>
+                <Button onClick={() => setIsModalOpen(true)}>Gerar Arquivo DXF</Button>
               </div>
             </Card>
+          )}
+
+          {selectedModel && selectedBrand && (
+            <DXFGenerationModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              brandName={selectedBrand.name}
+              modelName={selectedModel.name}
+              modelId={selectedModel.id}
+              onSuccess={() => {
+                console.log('DXF gerado com sucesso!');
+              }}
+            />
           )}
         </div>
       </main>
