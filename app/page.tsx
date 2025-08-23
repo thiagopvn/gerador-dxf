@@ -17,8 +17,8 @@ export default function HomePage() {
                 <span className="text-white text-xl font-bold">DXF</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold">DXF Generator</h1>
-                <p className="text-xs text-muted">Geração profissional</p>
+                <h1 className="text-2xl font-bold">Generator</h1>
+                <p className="text-xs text-muted">Gerador de DXF</p>
               </div>
             </div>
 
@@ -43,15 +43,14 @@ export default function HomePage() {
             <h1 className="text-6xl sm:text-7xl lg:text-8xl font-bold mb-8">
               <span>Geração de</span>
               <br />
-              <span className="text-primary">Arquivos DXF</span>
+              <span className="text-primary">Arquivo</span>
               <br />
               <span>Profissional</span>
             </h1>
 
             {/* Description */}
-            <p className="text-xl text-muted mb-12 max-w-3xl mx-auto">
-              A plataforma mais avançada para remarcação de chassi do mercado. 
-              Precisão técnica, velocidade incomparável e confiabilidade total.
+            <p className="text-xl text-muted mb-12 max-w-3xl mx-auto uppercase">
+              PLATAFORMA AVANÇADA COM PRECISÃO, TÉCNICA E VELOCIDADE.
             </p>
 
             {/* CTA Buttons */}
